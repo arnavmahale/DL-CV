@@ -3,6 +3,10 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Project data and OS cruft
+Dataset/
+.DS_Store
+
 # C extensions
 *.so
 
