@@ -11,7 +11,6 @@
         <!-- Header -->
         <header>
             <h1>🍎 Fresh or Rotten</h1>
-            <p class="subtitle">AI-Powered Produce Freshness Detection</p>
         </header>
 
         <!-- Main Content -->
@@ -56,17 +55,16 @@
                 <div class="controls">
                     <button id="startCamera" class="btn btn-primary">
                         <span class="btn-icon">📷</span>
-                        Start Camera
-                    </button>
-                    <button id="captureBtn" class="btn btn-success" disabled>
-                        <span class="btn-icon">📸</span>
-                        Capture & Analyze
+                        Start Live Analysis
                     </button>
                     <button id="stopCamera" class="btn btn-secondary" disabled>
                         <span class="btn-icon">⏹</span>
-                        Stop Camera
+                        Stop Analysis
                     </button>
                 </div>
+                <p class="camera-hint">
+                    <small>🔄 Analysis runs automatically every 2.5 seconds while camera is active</small>
+                </p>
             </div>
 
             <!-- Upload Section -->
@@ -165,9 +163,6 @@
         <!-- Footer -->
         <footer>
             <p>Powered by EfficientNet-B0 | 97.2% Accuracy | Duke AIPI 540</p>
-            <p class="supported-produce">
-                <small>Supports: Apple, Banana, Bellpepper, Bittergourd, Capsicum, Carrot, Cucumber, Mango, Okra, Orange, Potato, Strawberry, Tomato</small>
-            </p>
         </footer>
     </div>
 

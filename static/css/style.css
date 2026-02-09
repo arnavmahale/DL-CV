@@ -90,9 +90,9 @@ main {
     min-width: 200px;
     max-width: 300px;
     padding: 20px 30px;
-    border: 2px solid var(--border-color);
+    border: 3px solid #667eea;
     border-radius: 12px;
-    background: white;
+    background: transparent;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -102,25 +102,35 @@ main {
 }
 
 .method-tab:hover {
-    border-color: var(--primary-color);
+    border-color: #764ba2;
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+    background: rgba(102, 126, 234, 0.05);
 }
 
 .method-tab.active {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-    box-shadow: var(--shadow);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: var(--shadow-lg);
+}
+
+.method-tab.active .tab-label {
+    color: white;
 }
 
 .tab-icon {
     font-size: 2.5rem;
+    filter: grayscale(30%);
+}
+
+.method-tab.active .tab-icon {
+    filter: none;
 }
 
 .tab-label {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: white;
 }
 
 /* Input Sections */
@@ -227,7 +237,14 @@ main {
     gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+}
+
+.camera-hint {
+    text-align: center;
+    color: var(--text-muted);
+    margin: 0 0 20px 0;
+    font-style: italic;
 }
 
 /* Buttons */

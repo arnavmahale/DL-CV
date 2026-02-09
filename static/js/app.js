@@ -5,7 +5,6 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const startCameraBtn = document.getElementById('startCamera');
-const captureBtnEl = document.getElementById('captureBtn');
 const stopCameraBtn = document.getElementById('stopCamera');
 const fileInput = document.getElementById('fileInput');
 const cameraPlaceholder = document.getElementById('cameraPlaceholder');
@@ -29,6 +28,8 @@ const cancelUploadBtn = document.getElementById('cancelUpload');
 let stream = null;
 let isCameraActive = false;
 let currentImageBlob = null;
+let continuousInferenceInterval = null;
+let isAnalyzing = false;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     // Camera controls
     startCameraBtn.addEventListener('click', startCamera);
-    captureBtnEl.addEventListener('click', captureAndAnalyze);
     stopCameraBtn.addEventListener('click', stopCamera);
 
     // Upload controls
@@ -152,10 +152,12 @@ async function startCamera() {
         cameraPlaceholder.style.display = 'none';
         isCameraActive = true;
         startCameraBtn.disabled = true;
-        captureBtnEl.disabled = false;
         stopCameraBtn.disabled = false;
 
         hideError();
+
+        // Start continuous inference
+        startContinuousInference();
     } catch (error) {
         console.error('Camera error:', error);
         if (error.name === 'NotAllowedError') {
@@ -169,6 +171,9 @@ async function startCamera() {
 }
 
 function stopCamera() {
+    // Stop continuous inference
+    stopContinuousInference();
+
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
         video.srcObject = null;
@@ -179,13 +184,39 @@ function stopCamera() {
     cameraPlaceholder.style.display = 'flex';
     isCameraActive = false;
     startCameraBtn.disabled = false;
-    captureBtnEl.disabled = true;
     stopCameraBtn.disabled = true;
+
+    // Hide results
+    resultsSection.style.display = 'none';
+}
+
+// Continuous Inference Functions
+function startContinuousInference() {
+    // Initial analysis after a short delay to let camera stabilize
+    setTimeout(() => {
+        if (isCameraActive) {
+            captureAndAnalyze();
+        }
+    }, 1000);
+
+    // Set up continuous inference every 2.5 seconds
+    continuousInferenceInterval = setInterval(() => {
+        if (isCameraActive && !isAnalyzing) {
+            captureAndAnalyze();
+        }
+    }, 2500);
+}
+
+function stopContinuousInference() {
+    if (continuousInferenceInterval) {
+        clearInterval(continuousInferenceInterval);
+        continuousInferenceInterval = null;
+    }
+    isAnalyzing = false;
 }
 
 function captureAndAnalyze() {
-    if (!isCameraActive) {
-        showError('Camera not active');
+    if (!isCameraActive || isAnalyzing) {
         return;
     }
 
@@ -197,10 +228,10 @@ function captureAndAnalyze() {
 
     // Convert canvas to blob
     canvas.toBlob(async (blob) => {
-        if (blob) {
-            await analyzeImage(blob);
+        if (blob && isCameraActive) {
+            await analyzeImageContinuous(blob);
         }
-    }, 'image/jpeg', 0.95);
+    }, 'image/jpeg', 0.85);
 }
 
 function handleFileUpload(event) {
@@ -288,6 +319,40 @@ async function analyzeImage(imageBlob) {
     }
 }
 
+async function analyzeImageContinuous(imageBlob) {
+    if (isAnalyzing) return;
+
+    isAnalyzing = true;
+    hideError();
+
+    try {
+        // Create form data
+        const formData = new FormData();
+        formData.append('image', imageBlob, 'image.jpg');
+
+        // Send to API
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Prediction failed');
+        }
+
+        // Display results (without hiding the camera)
+        displayResultsContinuous(data);
+
+    } catch (error) {
+        console.error('Analysis error:', error);
+        // Don't show error in continuous mode to avoid interruption
+    } finally {
+        isAnalyzing = false;
+    }
+}
+
 function displayResults(data) {
     // Update prediction label and icon
     const predictionLabel = document.getElementById('predictionLabel');
@@ -326,6 +391,45 @@ function displayResults(data) {
     // Show results
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function displayResultsContinuous(data) {
+    // Same as displayResults but keeps camera visible
+    const predictionLabel = document.getElementById('predictionLabel');
+    const resultIcon = document.getElementById('resultIcon');
+
+    predictionLabel.textContent = data.prediction;
+
+    // Set icon and color based on prediction
+    if (data.prediction === 'Fresh') {
+        resultIcon.textContent = '✅';
+        resultCard.classList.add('fresh');
+        resultCard.classList.remove('rotten');
+    } else {
+        resultIcon.textContent = '❌';
+        resultCard.classList.add('rotten');
+        resultCard.classList.remove('fresh');
+    }
+
+    // Update confidence
+    const confidenceValue = document.getElementById('confidenceValue');
+    const confidenceFill = document.getElementById('confidenceFill');
+
+    confidenceValue.textContent = data.confidence.toFixed(1) + '%';
+    confidenceFill.style.width = data.confidence + '%';
+
+    // Update probabilities
+    document.getElementById('freshProb').textContent =
+        data.probabilities.Fresh.toFixed(1) + '%';
+    document.getElementById('rottenProb').textContent =
+        data.probabilities.Rotten.toFixed(1) + '%';
+
+    // Update inference time
+    document.getElementById('inferenceTime').textContent =
+        data.inference_time.toFixed(2);
+
+    // Show results without scrolling
+    resultsSection.style.display = 'block';
 }
 
 function resetToInput() {
