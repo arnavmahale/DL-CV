@@ -1,0 +1,147 @@
+{
+  "accuracy": 0.9077397644419518,
+  "precision_macro": 0.8969031553508026,
+  "recall_macro": 0.8961921926456036,
+  "f1_macro": 0.8965458708036302,
+  "precision_weighted": 0.9076599932538517,
+  "recall_weighted": 0.9077397644419518,
+  "f1_weighted": 0.9076984116095284,
+  "auc_roc": 0.959587967199075,
+  "model_name": "Classical (random_forest)",
+  "per_produce": {
+    "Apple": {
+      "count": 1202,
+      "accuracy": 0.9309484193011647,
+      "f1": 0.9366895499618612,
+      "fresh_count": 532,
+      "rotten_count": 670
+    },
+    "Banana": {
+      "count": 1126,
+      "accuracy": 0.9733570159857904,
+      "f1": 0.9759615384615384,
+      "fresh_count": 517,
+      "rotten_count": 609
+    },
+    "Bellpepper": {
+      "count": 181,
+      "accuracy": 0.8232044198895028,
+      "f1": 0.7894736842105263,
+      "fresh_count": 95,
+      "rotten_count": 86
+    },
+    "Bittergourd": {
+      "count": 94,
+      "accuracy": 0.8936170212765957,
+      "f1": 0.9193548387096774,
+      "fresh_count": 37,
+      "rotten_count": 57
+    },
+    "Capsicum": {
+      "count": 272,
+      "accuracy": 0.9338235294117647,
+      "f1": 0.9285714285714286,
+      "fresh_count": 144,
+      "rotten_count": 128
+    },
+    "Carrot": {
+      "count": 1882,
+      "accuracy": 0.8910733262486716,
+      "f1": 0.7440699126092385,
+      "fresh_count": 1525,
+      "rotten_count": 357
+    },
+    "Cucumber": {
+      "count": 317,
+      "accuracy": 0.8958990536277602,
+      "f1": 0.896551724137931,
+      "fresh_count": 160,
+      "rotten_count": 157
+    },
+    "Mango": {
+      "count": 191,
+      "accuracy": 0.9633507853403142,
+      "f1": 0.9613259668508287,
+      "fresh_count": 102,
+      "rotten_count": 89
+    },
+    "Okra": {
+      "count": 156,
+      "accuracy": 0.6794871794871795,
+      "f1": 0.5833333333333334,
+      "fresh_count": 112,
+      "rotten_count": 44
+    },
+    "Orange": {
+      "count": 2134,
+      "accuracy": 0.9194001874414246,
+      "f1": 0.8234086242299795,
+      "fresh_count": 1640,
+      "rotten_count": 494
+    },
+    "Potato": {
+      "count": 401,
+      "accuracy": 0.7506234413965087,
+      "f1": 0.8154981549815498,
+      "fresh_count": 154,
+      "rotten_count": 247
+    },
+    "Strawberry": {
+      "count": 179,
+      "accuracy": 0.9441340782122905,
+      "f1": 0.9431818181818182,
+      "fresh_count": 93,
+      "rotten_count": 86
+    },
+    "Tomato": {
+      "count": 2563,
+      "accuracy": 0.907530238002341,
+      "f1": 0.7579162410623085,
+      "fresh_count": 1991,
+      "rotten_count": 572
+    }
+  },
+  "mispredictions": [
+    {
+      "index": 3419,
+      "true_label": "Rotten",
+      "predicted_label": "Fresh",
+      "produce_type": "Carrot"
+    },
+    {
+      "index": 1614,
+      "true_label": "Rotten",
+      "predicted_label": "Fresh",
+      "produce_type": "Tomato"
+    },
+    {
+      "index": 5433,
+      "true_label": "Rotten",
+      "predicted_label": "Fresh",
+      "produce_type": "Orange"
+    },
+    {
+      "index": 9178,
+      "true_label": "Rotten",
+      "predicted_label": "Fresh",
+      "produce_type": "Orange"
+    },
+    {
+      "index": 1078,
+      "true_label": "Fresh",
+      "predicted_label": "Rotten",
+      "produce_type": "Mango"
+    }
+  ],
+  "confusion_matrix": [
+    [
+      6615,
+      487
+    ],
+    [
+      500,
+      3096
+    ]
+  ],
+  "n_samples": 10698
+}
