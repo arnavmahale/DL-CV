@@ -5,7 +5,6 @@ __pycache__/
 
 # Project data and OS cruft
 Dataset/
-models/
 .DS_Store
 
 # C extensions
