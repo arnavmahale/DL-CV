@@ -18,6 +18,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app
 
+# Create app instance for Gunicorn
+app = create_app()
+
 
 def main():
     parser = argparse.ArgumentParser(
