@@ -43,4 +43,13 @@ def create_app(model_path="models/deep_efficientnet_b0.pth"):
     from app.routes import register_routes
     register_routes(app)
 
+    # Preload model at startup to avoid slow first request
+    with app.app_context():
+        from app.inference import get_predictor
+        predictor = get_predictor()
+        if predictor._model is None and os.path.exists(model_path):
+            print(f"Preloading model from {model_path}...")
+            predictor.load_model(model_path)
+            print("Model preloaded successfully!")
+
     return app
