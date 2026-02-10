@@ -113,8 +113,12 @@ function setupDragAndDrop() {
 
     uploadArea.addEventListener('drop', handleDrop);
 
-    // Make upload area clickable
-    uploadArea.addEventListener('click', () => fileInput.click());
+    // Make upload area clickable (but not the button itself to avoid double-trigger)
+    uploadArea.addEventListener('click', (e) => {
+        // Don't trigger if clicking the label or its children
+        if (e.target.closest('label')) return;
+        fileInput.click();
+    });
 }
 
 function handleDrop(e) {
@@ -265,6 +269,10 @@ function handleFile(file) {
         uploadArea.style.display = 'none';
         uploadPreview.style.display = 'block';
         hideError();
+    };
+    reader.onerror = () => {
+        showError('Failed to read the image file. Please try again.');
+        currentImageBlob = null;
     };
     reader.readAsDataURL(file);
 }
