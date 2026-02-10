@@ -130,6 +130,47 @@ function handleDrop(e) {
     }
 }
 
+// Resize image for faster upload and processing
+function resizeImage(file, maxWidth, maxHeight, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                // Calculate new dimensions
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+
+                // Create canvas and resize
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to blob
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error('Failed to create blob'));
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+    });
+}
+
 function checkCameraSupport() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         showError('Camera not supported on this device/browser. Please use file upload.');
@@ -224,18 +265,29 @@ function captureAndAnalyze() {
         return;
     }
 
-    // Capture frame from video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
+    // Capture frame from video with optimized size
+    const maxDim = 800;
+    let width = video.videoWidth;
+    let height = video.videoHeight;
 
-    // Convert canvas to blob
+    // Resize if needed
+    if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, width, height);
+
+    // Convert canvas to blob with compression
     canvas.toBlob(async (blob) => {
         if (blob && isCameraActive) {
             await analyzeImageContinuous(blob);
         }
-    }, 'image/jpeg', 0.85);
+    }, 'image/jpeg', 0.80);
 }
 
 function handleFileUpload(event) {
@@ -245,7 +297,7 @@ function handleFileUpload(event) {
     event.target.value = ''; // Reset file input
 }
 
-function handleFile(file) {
+async function handleFile(file) {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/bmp'];
     if (!validTypes.includes(file.type)) {
@@ -259,22 +311,28 @@ function handleFile(file) {
         return;
     }
 
-    // Store the file
-    currentImageBlob = file;
+    // Resize and compress image for faster upload/processing
+    try {
+        const resizedBlob = await resizeImage(file, 800, 800, 0.85);
+        currentImageBlob = resizedBlob;
 
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        previewImage.src = e.target.result;
-        uploadArea.style.display = 'none';
-        uploadPreview.style.display = 'block';
-        hideError();
-    };
-    reader.onerror = () => {
-        showError('Failed to read the image file. Please try again.');
-        currentImageBlob = null;
-    };
-    reader.readAsDataURL(file);
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            uploadArea.style.display = 'none';
+            uploadPreview.style.display = 'block';
+            hideError();
+        };
+        reader.onerror = () => {
+            showError('Failed to read the image file. Please try again.');
+            currentImageBlob = null;
+        };
+        reader.readAsDataURL(resizedBlob);
+    } catch (error) {
+        console.error('Image resize error:', error);
+        showError('Failed to process image. Please try again.');
+    }
 }
 
 function resetUpload() {
