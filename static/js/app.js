@@ -265,29 +265,18 @@ function captureAndAnalyze() {
         return;
     }
 
-    // Capture frame from video with optimized size
-    const maxDim = 800;
-    let width = video.videoWidth;
-    let height = video.videoHeight;
-
-    // Resize if needed
-    if (width > maxDim || height > maxDim) {
-        const ratio = Math.min(maxDim / width, maxDim / height);
-        width = Math.round(width * ratio);
-        height = Math.round(height * ratio);
-    }
-
-    canvas.width = width;
-    canvas.height = height;
+    // Capture frame from video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, width, height);
+    ctx.drawImage(video, 0, 0);
 
-    // Convert canvas to blob with compression
+    // Convert canvas to blob
     canvas.toBlob(async (blob) => {
         if (blob && isCameraActive) {
             await analyzeImageContinuous(blob);
         }
-    }, 'image/jpeg', 0.80);
+    }, 'image/jpeg', 0.85);
 }
 
 function handleFileUpload(event) {
@@ -297,7 +286,7 @@ function handleFileUpload(event) {
     event.target.value = ''; // Reset file input
 }
 
-async function handleFile(file) {
+function handleFile(file) {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/bmp'];
     if (!validTypes.includes(file.type)) {
@@ -311,28 +300,22 @@ async function handleFile(file) {
         return;
     }
 
-    // Resize and compress image for faster upload/processing
-    try {
-        const resizedBlob = await resizeImage(file, 800, 800, 0.85);
-        currentImageBlob = resizedBlob;
+    // Store the file directly (no resizing)
+    currentImageBlob = file;
 
-        // Show preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            previewImage.src = e.target.result;
-            uploadArea.style.display = 'none';
-            uploadPreview.style.display = 'block';
-            hideError();
-        };
-        reader.onerror = () => {
-            showError('Failed to read the image file. Please try again.');
-            currentImageBlob = null;
-        };
-        reader.readAsDataURL(resizedBlob);
-    } catch (error) {
-        console.error('Image resize error:', error);
-        showError('Failed to process image. Please try again.');
-    }
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        uploadArea.style.display = 'none';
+        uploadPreview.style.display = 'block';
+        hideError();
+    };
+    reader.onerror = () => {
+        showError('Failed to read the image file. Please try again.');
+        currentImageBlob = null;
+    };
+    reader.readAsDataURL(file);
 }
 
 function resetUpload() {
